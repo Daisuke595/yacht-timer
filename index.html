@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>音声でスタート時刻設定（拡張版）</title>
+  <title>音声認識アプリ - スタート時刻設定</title>
   <style>
     body {
       font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -47,119 +47,146 @@
 </head>
 <body>
   <div class="container">
-    <h1>音声でスタート時刻を設定（拡張版）</h1>
+    <h1>音声でスタート時刻を設定</h1>
     <p>「10時30分スタート」「9時5分から」「13:20開始」などと話してください。</p>
-    
+
     <button id="startButton">音声認識開始</button>
     <p id="status">ボタンを押して話してください。</p>
-    
+
     <div class="time-display">
       <label for="startTime">スタート時刻:</label>
       <input type="time" id="startTime">
     </div>
-    
+
     <p id="result"></p>
   </div>
 
 <script>
+// ブラウザ互換性チェック
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (!SpeechRecognition) {
-  alert('お使いのブラウザは音声認識をサポートしていません。Chrome、Edge、Safariなどの最新ブラウザをお使いください。');
-} else {
-  const recognition = new SpeechRecognition();
-  recognition.lang = 'ja-JP';
-  recognition.interimResults = false;
-
-  const startButton = document.getElementById('startButton');
   const status = document.getElementById('status');
-  const result = document.getElementById('result');
-  const startTime = document.getElementById('startTime');
+  const startButton = document.getElementById('startButton');
 
-  startButton.addEventListener('click', () => {
-    recognition.start();
-    status.textContent = '聞いています...';
-    result.textContent = '';
-  });
+  const recommendedBrowsers = `
+    このアプリは音声認識機能(Web Speech API)を使用しています。
+    以下の最新バージョンのブラウザをご利用ください：
+    <ul>
+      <li>Google Chrome</li>
+      <li>Microsoft Edge</li>
+      <li>Safari (macOS/iOS)</li>
+    </ul>
+  `;
 
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.trim();
-    console.log('認識結果:', transcript);
+  const userAgent = navigator.userAgent;
+  let browserInfo = '不明なブラウザ';
+  if (userAgent.includes('Chrome')) {
+    browserInfo = 'Google Chrome';
+  } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+    browserInfo = 'Safari';
+  } else if (userAgent.includes('Edge')) {
+    browserInfo = 'Microsoft Edge';
+  } else if (userAgent.includes('Firefox')) {
+    browserInfo = 'Mozilla Firefox';
+  }
 
-    // 拡張した正規表現パターン
-    const patterns = [
-      /(\d{1,2})時(\d{1,2})分(スタート|開始|から|に設定|セット)/,
-      /(\d{1,2}):(\d{1,2})(スタート|開始|から|に設定|セット)/
-    ];
+  status.innerHTML = `
+    お使いのブラウザ (${browserInfo}) は音声認識機能をサポートしていません。<br>
+    ${recommendedBrowsers}
+  `;
+  
+  startButton.disabled = true;
+  startButton.textContent = 'このブラウザでは利用できません';
+} else {
+  
+// 音声認識処理
+const recognition = new SpeechRecognition();
+recognition.lang = 'ja-JP';
+recognition.interimResults = false;
 
-    let hour, minute, matched = false;
+const startButton = document.getElementById('startButton');
+const status = document.getElementById('status');
+const result = document.getElementById('result');
+const startTime = document.getElementById('startTime');
 
-    for (const pattern of patterns) {
-      const match = transcript.match(pattern);
-      if (match) {
-        hour = match[1];
-        minute = match[2];
-        matched = true;
-        break; // 一致したらループ終了
-      }
+startButton.addEventListener('click', () => {
+  recognition.start();
+  status.textContent = '聞いています...';
+  result.textContent = '';
+});
+
+recognition.onresult = (event) => {
+  const transcript = event.results[0][0].transcript.trim();
+  console.log('認識結果:', transcript);
+
+  // 拡張した正規表現パターン
+  const patterns = [
+    /(\d{1,2})時(\d{1,2})分(スタート|開始|から|に設定|セット)/,
+    /(\d{1,2}):(\d{1,2})(スタート|開始|から|に設定|セット)/
+  ];
+
+  let hour, minute, matched = false;
+
+  for (const pattern of patterns) {
+    const match = transcript.match(pattern);
+    if (match) {
+      hour = match[1];
+      minute = match[2];
+      matched = true;
+      break; // 一致したらループ終了
     }
+  }
 
-    if (matched) {
-      // 数値が1桁の場合は先頭にゼロを追加
-      const formattedHour = hour.padStart(2, '0');
-      const formattedMinute = minute.padStart(2, '0');
-      
-      const formattedTime = `${formattedHour}:${formattedMinute}`;
-      
-      startTime.value = formattedTime;
-      
-      result.textContent = `スタート時刻を${formattedHour}時${formattedMinute}分に設定しました。`;
-      
-    } else {
-      result.textContent = '時刻の形式が認識できませんでした。もう一度「10時30分スタート」のように話してください。';
-    }
+  if (matched) {
+    // 数値が1桁の場合は先頭にゼロを追加
+    const formattedHour = hour.padStart(2, '0');
+    const formattedMinute = minute.padStart(2, '0');
     
-  };
-
-  recognition.onerror = function(event) {
-    console.error('音声認識エラー:', event.error);
-  
-    let errorMessage = '';
+    const formattedTime = `${formattedHour}:${formattedMinute}`;
     
-    // エラータイプごとに適切なメッセージを設定
-    switch (event.error) {
-      case 'not-allowed':
-        errorMessage = 'マイクへのアクセスが許可されていません。ブラウザの設定でマイクアクセスを許可してください。';
-        break;
-      case 'network':
-        errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
-        break;
-      case 'no-speech':
-        errorMessage = '音声が検出されませんでした。もう一度話しかけてください。';
-        break;
-      case 'aborted':
-        errorMessage = '音声認識が中断されました。もう一度試してください。';
-        break;
-      case 'audio-capture':
-        errorMessage = 'マイクが見つかりませんでした。マイクが正しく接続されているか確認してください。';
-        break;
-      default:
-        errorMessage = `予期しないエラーが発生しました: ${event.error}`;
-    }
-  
-    // ユーザーへのフィードバック
-    const status = document.getElementById('status');
-    status.textContent = errorMessage;
-  
-    // 再試行案内
-    const result = document.getElementById('result');
-    result.textContent = 'もう一度「音声認識開始」ボタンを押して試してください。';
-  };
+    startTime.value = formattedTime;
+    
+    result.textContent = `スタート時刻を${formattedHour}時${formattedMinute}分に設定しました。`;
+    
+  } else {
+    result.textContent = '時刻の形式が認識できませんでした。もう一度「10時30分スタート」のように話してください。';
+  }
+};
 
+recognition.onerror = (event) => {
+  console.error('音声認識エラー:', event.error);
 
-  recognition.onend = () => {
-    status.textContent = '音声認識が終了しました。';
-  };
+  let errorMessage = '';
+  
+  switch (event.error) {
+    case 'not-allowed':
+      errorMessage = 'マイクへのアクセスが許可されていません。ブラウザの設定でマイクアクセスを許可してください。';
+      break;
+    case 'network':
+      errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
+      break;
+    case 'no-speech':
+      errorMessage = '音声が検出されませんでした。もう一度話しかけてください。';
+      break;
+    case 'aborted':
+      errorMessage = '音声認識が中断されました。もう一度試してください。';
+      break;
+    case 'audio-capture':
+      errorMessage = 'マイクが見つかりませんでした。マイクが正しく接続されているか確認してください。';
+      break;
+    default:
+      errorMessage = `予期しないエラーが発生しました: ${event.error}`;
+  }
+
+  status.textContent = errorMessage;
+
+  result.textContent = 'もう一度「音声認識開始」ボタンを押して試してください。';
+};
+
+recognition.onend = () => {
+  status.textContent = '音声認識が終了しました。';
+};
 }
 </script>
 
