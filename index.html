@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>音声時刻設定</title>
+  <title>音声でスタート時刻設定（拡張版）</title>
   <style>
     body {
       font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -47,11 +47,11 @@
 </head>
 <body>
   <div class="container">
-    <h1>音声でスタート時刻を設定</h1>
-    <p>「10時30分スタート」のように話してください</p>
+    <h1>音声でスタート時刻を設定（拡張版）</h1>
+    <p>「10時30分スタート」「9時5分から」「13:20開始」などと話してください。</p>
     
     <button id="startButton">音声認識開始</button>
-    <p id="status">ボタンを押して話してください</p>
+    <p id="status">ボタンを押して話してください。</p>
     
     <div class="time-display">
       <label for="startTime">スタート時刻:</label>
@@ -61,59 +61,76 @@
     <p id="result"></p>
   </div>
 
-  <script>
-    // ブラウザ互換性のための対応
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      alert('お使いのブラウザは音声認識をサポートしていません。Chrome、Edge、Safariなどの最新ブラウザをお使いください。');
-    } else {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'ja-JP';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-      
-      const startButton = document.getElementById('startButton');
-      const status = document.getElementById('status');
-      const result = document.getElementById('result');
-      const startTime = document.getElementById('startTime');
-      
-      startButton.addEventListener('click', function() {
-        recognition.start();
-        status.textContent = '聞いています...';
-        result.textContent = '';
-      });
-      
-      recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        console.log('認識結果: ' + transcript);
-        
-        // 時刻設定のパターンを検出
-        const timePattern = /(\d{1,2})時(\d{1,2})分(スタート|開始)/;
-        const match = transcript.match(timePattern);
-        
-        if (match) {
-          const hour = match[1];
-          const minute = match[2];
-          const formattedTime = `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
-          
-          // スタート時刻を設定
-          startTime.value = formattedTime;
-          result.textContent = `スタート時刻を${hour}時${minute}分に設定しました`;
-        } else {
-          result.textContent = '時刻の形式が認識できませんでした。「10時30分スタート」のように話してください。';
-        }
-      };
-      
-      recognition.onerror = function(event) {
-        console.error('音声認識エラー:', event.error);
-        status.textContent = `エラーが発生しました: ${event.error}`;
-      };
-      
-      recognition.onend = function() {
-        status.textContent = '音声認識が終了しました';
-      };
+<script>
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!SpeechRecognition) {
+  alert('お使いのブラウザは音声認識をサポートしていません。Chrome、Edge、Safariなどの最新ブラウザをお使いください。');
+} else {
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'ja-JP';
+  recognition.interimResults = false;
+
+  const startButton = document.getElementById('startButton');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  const startTime = document.getElementById('startTime');
+
+  startButton.addEventListener('click', () => {
+    recognition.start();
+    status.textContent = '聞いています...';
+    result.textContent = '';
+  });
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    console.log('認識結果:', transcript);
+
+    // 拡張した正規表現パターン
+    const patterns = [
+      /(\d{1,2})時(\d{1,2})分(スタート|開始|から|に設定|セット)/,
+      /(\d{1,2}):(\d{1,2})(スタート|開始|から|に設定|セット)/
+    ];
+
+    let hour, minute, matched = false;
+
+    for (const pattern of patterns) {
+      const match = transcript.match(pattern);
+      if (match) {
+        hour = match[1];
+        minute = match[2];
+        matched = true;
+        break; // 一致したらループ終了
+      }
     }
-  </script>
+
+    if (matched) {
+      // 数値が1桁の場合は先頭にゼロを追加
+      const formattedHour = hour.padStart(2, '0');
+      const formattedMinute = minute.padStart(2, '0');
+      
+      const formattedTime = `${formattedHour}:${formattedMinute}`;
+      
+      startTime.value = formattedTime;
+      
+      result.textContent = `スタート時刻を${formattedHour}時${formattedMinute}分に設定しました。`;
+      
+    } else {
+      result.textContent = '時刻の形式が認識できませんでした。もう一度「10時30分スタート」のように話してください。';
+    }
+    
+  };
+
+  recognition.onerror = (event) => {
+    console.error('音声認識エラー:', event.error);
+    status.textContent = `エラーが発生しました：${event.error}`;
+  };
+
+  recognition.onend = () => {
+    status.textContent = '音声認識が終了しました。';
+  };
+}
+</script>
+
 </body>
 </html>
