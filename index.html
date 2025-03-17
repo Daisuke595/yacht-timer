@@ -121,10 +121,41 @@ if (!SpeechRecognition) {
     
   };
 
-  recognition.onerror = (event) => {
+  recognition.onerror = function(event) {
     console.error('音声認識エラー:', event.error);
-    status.textContent = `エラーが発生しました：${event.error}`;
+  
+    let errorMessage = '';
+    
+    // エラータイプごとに適切なメッセージを設定
+    switch (event.error) {
+      case 'not-allowed':
+        errorMessage = 'マイクへのアクセスが許可されていません。ブラウザの設定でマイクアクセスを許可してください。';
+        break;
+      case 'network':
+        errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
+        break;
+      case 'no-speech':
+        errorMessage = '音声が検出されませんでした。もう一度話しかけてください。';
+        break;
+      case 'aborted':
+        errorMessage = '音声認識が中断されました。もう一度試してください。';
+        break;
+      case 'audio-capture':
+        errorMessage = 'マイクが見つかりませんでした。マイクが正しく接続されているか確認してください。';
+        break;
+      default:
+        errorMessage = `予期しないエラーが発生しました: ${event.error}`;
+    }
+  
+    // ユーザーへのフィードバック
+    const status = document.getElementById('status');
+    status.textContent = errorMessage;
+  
+    // 再試行案内
+    const result = document.getElementById('result');
+    result.textContent = 'もう一度「音声認識開始」ボタンを押して試してください。';
   };
+
 
   recognition.onend = () => {
     status.textContent = '音声認識が終了しました。';
