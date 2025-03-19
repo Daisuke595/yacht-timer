@@ -267,13 +267,16 @@ function updateCountdown() {
   const targetTime = new Date();
   targetTime.setHours(hours, minutes, 0, 0);
   
-  // 現在時刻がスタート時刻を過ぎている場合は、翌日の同時刻に設定
-  if (targetTime < now) {
-    targetTime.setDate(targetTime.getDate() + 1);
-  }
-  
   // 残り時間（ミリ秒）
-  const timeDiff = targetTime - now;
+  let timeDiff = targetTime - now;
+  
+  // スタート時刻を過ぎている場合は終了処理
+  if (timeDiff <= 0) {
+    countdown.textContent = 'スタート時刻になりました！';
+    speak('スタート時刻になりました！');
+    stopCountdown();
+    return; // ←ここで終了することで翌日の設定を防止
+  }
   
   // ミリ秒を時間、分、秒に変換
   const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
