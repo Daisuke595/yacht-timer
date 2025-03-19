@@ -71,7 +71,7 @@
   <h1>Yacht Timer</h1>
     <p>「10時30分スタート」「9時5分から」「13:20開始」などと話してください。</p>
 
-    <button id="startButton">スタート時刻設置</button>
+    <button id="startButton">スタート時刻設定</button>
     <p id="status">ボタンを押して話してください。</p>
 
     <div class="time-display">
@@ -288,8 +288,8 @@ function updateCountdown() {
   
   // スタート時刻を過ぎている場合は終了処理
   if (timeDiff <= 0) {
-    countdown.textContent = 'スタート';
     speak('スタート');
+    countdown.textContent = 'スタート';
     stopCountdown();
     return; // ←ここで終了することで翌日の設定を防止
   }
@@ -299,17 +299,6 @@ function updateCountdown() {
   const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
   const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
   
-  // 表示用テキスト
-  let countdownText = '';
-  
-  if (hoursLeft > 0) {
-    countdownText += `${hoursLeft}時間`;
-  }
-  
-  countdownText += `${minutesLeft}分${secondsLeft}秒`;
-  
-  countdown.textContent = `開始まであと ${countdownText}`;
-
   // 特定のタイミングで読み上げる処理
   if (minutesLeft === 15 && secondsLeft === 0) {
     speak('15分前');
@@ -378,13 +367,16 @@ function updateCountdown() {
   if (minutesLeft === 0 && secondsLeft <= 9 && secondsLeft > 0) {
     speak(`${secondsLeft}`);
   }
+
+    // 表示用テキスト
+    let countdownText = '';
   
-  // スタート時刻になったらお知らせ
-  if (timeDiff <= 0) {
-    countdown.textContent = 'スタート';
-    speak('スタート');
-    stopCountdown();
-  }
+    if (hoursLeft > 0) {
+      countdownText += `${hoursLeft}時間`;
+    }
+    countdownText += `${minutesLeft}分${secondsLeft}秒`;
+    countdown.textContent = `開始まであと ${countdownText}`;
+
 }
 
 // カウントダウン開始
