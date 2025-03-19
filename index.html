@@ -272,6 +272,7 @@ function speak(text) {
 
   if (kyokoVoice) {
     utterance.voice = kyokoVoice; // Kyokoの音声を設定
+    utterance.voice = japaneseVoices[0];
     console.log(`選択された音声: ${kyokoVoice.name}`);
   } else {
     utterance.voice = japaneseVoices[0]; // Kyokoが見つからなければ最初の日本語音声を設定
