@@ -286,19 +286,20 @@ function updateCountdown() {
   // 残り時間（ミリ秒）
   let timeDiff = targetTime - now;
   
-  // スタート時刻を過ぎている場合は終了処理
-  if (timeDiff <= 0) {
-    speak('スタート');
-    countdown.textContent = 'スタート';
-    stopCountdown();
-    return; // ←ここで終了することで翌日の設定を防止
-  }
-  
   // ミリ秒を時間、分、秒に変換
   const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
   const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
   const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
   
+  if (minutesLeft === 0 && secondsLeft === 0) {
+    speak(`スタート`);
+    countdown.textContent = 'スタート';
+  }
+
+  if (minutesLeft === 0 && secondsLeft <= 15 && secondsLeft > 0) {
+    speak(`${secondsLeft}`);
+  }
+
   // 特定のタイミングで読み上げる処理
   if (minutesLeft === 15 && secondsLeft === 0) {
     speak('15分前');
@@ -360,12 +361,14 @@ function updateCountdown() {
     speak('20秒前');
   }
 
-  if (minutesLeft === 0 && secondsLeft === 10) {
-    speak('10秒前');
-  }
+//  if (minutesLeft === 0 && secondsLeft === 10) {
+//    speak('10秒前');
+//  }
 
-  if (minutesLeft === 0 && secondsLeft <= 9 && secondsLeft > 0) {
-    speak(`${secondsLeft}`);
+  // スタート時刻を過ぎている場合は終了処理
+  if (timeDiff <= 0) {
+    stopCountdown();
+    return; // ←ここで終了することで翌日の設定を防止
   }
 
     // 表示用テキスト
