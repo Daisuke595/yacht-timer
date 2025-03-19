@@ -70,7 +70,7 @@
 <body>
   <div class="container">
   <h1 style="color: #050dff;">Yacht Timer</h1>
-    <p>「10時30分スタート」「9時5分から」「13:20開始」などと話してください。</p>
+    <p>「10時30分」「10時30分 スタート」などと話してください。</p>
 
     <button id="startButton">スタート時刻設定</button>
     <p id="status">ボタンを押して話してください。</p>
@@ -159,9 +159,15 @@ recognition.onresult = (event) => {
   console.log('認識結果:', transcript);
 
   // 拡張した正規表現パターン
+  /*
   const patterns = [
     /(\d{1,2})時(\d{1,2})分\s*(スタート|開始|から|に設定|セット)/,
     /(\d{1,2}):(\d{1,2})\s*(スタート|開始|から|に設定|セット)/
+  ];
+  */
+
+  const patterns = [
+    /(\d{1,2})時(\d{1,2})分/,
   ];
 
   let hour, minute, matched = false;
