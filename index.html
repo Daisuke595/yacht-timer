@@ -246,15 +246,22 @@ function speak(text) {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'ja-JP';
-  utterance.rate = 1.0;
+  utterance.rate = 1.2;
   utterance.pitch = 1.0;
 
   // 日本語のvoiceを明示的に選択
   const voices = window.speechSynthesis.getVoices();
   const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
 
+  /*
+  console.log('利用可能な日本語音声リスト:');
+  japaneseVoices.forEach((voice, index) => {
+    console.log(`${index}: Name: ${voice.name}, Lang: ${voice.lang}, LocalService: ${voice.localService}`);
+  });
+  */
+
   if (japaneseVoices.length > 0) {
-    utterance.voice = japaneseVoices[0]; // 最初の日本語ボイスを使用
+    utterance.voice = japaneseVoices[5]; 
   } else {
     console.warn('日本語の音声が見つかりませんでした。');
     return;
