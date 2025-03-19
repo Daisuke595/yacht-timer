@@ -270,7 +270,9 @@ window.speechSynthesis.onvoiceschanged = () => {
 // 残り時間を計算して表示する関数
 function updateCountdown() {
   const targetTimeStr = startTime.value;
-  
+  // 表示用テキスト
+  let countdownText = '';
+
   if (!targetTimeStr) {
     countdown.textContent = 'スタート時刻が設定されていません';
     return;
@@ -294,6 +296,8 @@ function updateCountdown() {
   if (minutesLeft === 0 && secondsLeft === 0) {
     speak(`スタート`);
     countdown.textContent = 'スタート';
+    stopCountdown();
+    return; // ←ここで終了することで翌日の設定を防止
   }
 
   if (minutesLeft === 0 && secondsLeft <= 15 && secondsLeft > 0) {
@@ -361,24 +365,23 @@ function updateCountdown() {
     speak('20秒前');
   }
 
-//  if (minutesLeft === 0 && secondsLeft === 10) {
-//    speak('10秒前');
-//  }
+  //  if (minutesLeft === 0 && secondsLeft === 10) {
+  //    speak('10秒前');
+  //  }
 
+  /*
   // スタート時刻を過ぎている場合は終了処理
   if (timeDiff <= 0) {
     stopCountdown();
     return; // ←ここで終了することで翌日の設定を防止
   }
+  */
 
-    // 表示用テキスト
-    let countdownText = '';
-  
-    if (hoursLeft > 0) {
-      countdownText += `${hoursLeft}時間`;
-    }
-    countdownText += `${minutesLeft}分${secondsLeft}秒`;
-    countdown.textContent = `開始まであと ${countdownText}`;
+  if (hoursLeft > 0) {
+    countdownText += `${hoursLeft}時間`;
+  }
+  countdownText += `${minutesLeft}分${secondsLeft}秒`;
+  countdown.textContent = `開始まであと ${countdownText}`;
 
 }
 
