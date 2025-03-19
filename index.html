@@ -319,7 +319,7 @@ function updateCountdown() {
   if (minutesLeft === 0 && secondsLeft === 0) {
     speak(`スタート`);
     //countdown.textContent = 'スタート';
-    countdown.innerHTML = '<div style="text-align:center;"><span style="font-size:70px; font-weight:bold;">スタート</span></div>';
+    countdown.innerHTML = '<div style="text-align:center;"><span style="font-size:65px; font-weight:bold;">スタート</span></div>';
     stopCountdown();
     return; // ←ここで終了することで翌日の設定を防止
   }
@@ -406,7 +406,7 @@ function updateCountdown() {
   }
   countdownText += `${minutesLeft}分${secondsLeft}秒`;
   //countdown.textContent = `スタートまであと ${countdownText}`;
-  countdown.innerHTML = `スタートまで<br> <span style="font-size:70px; font-weight:bold;">${countdownText}</span>`;
+  countdown.innerHTML = `スタートまで<br> <span style="font-size:65px; font-weight:bold;">${countdownText}</span>`;
 }
 
 // カウントダウン開始
