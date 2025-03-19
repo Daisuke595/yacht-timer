@@ -47,7 +47,7 @@
     #result {
       margin-top: 15px;
       font-weight: bold;
-      color: #4285f4;
+      color: #0f9d58;
     }
     #countdown {
       margin-top: 20px;
@@ -275,7 +275,6 @@ function updateCountdown() {
 
   if (!targetTimeStr) {
     countdown.textContent = 'スタート時刻が設定されていません';
-    //countdown.innerHTML = '<span>スタート時刻が設定されていません</span>';
     return;
   }
   
@@ -382,9 +381,7 @@ function updateCountdown() {
     countdownText += `${hoursLeft}時間`;
   }
   countdownText += `${minutesLeft}分${secondsLeft}秒`;
-  countdown.textContent = `スタートまで ${countdownText}`;
-  //countdown.innerHTML = `スタートまで <span style="font-size:48px; font-weight:bold;">${countdownText}</span>`;
-}
+  countdown.textContent = `スタートまであと ${countdownText}`;
 
 }
 
