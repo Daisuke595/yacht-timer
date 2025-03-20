@@ -97,391 +97,384 @@
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (!SpeechRecognition) {
-    const status = document.getElementById('status');
-    const startButton = document.getElementById('startButton');
+  const status = document.getElementById('status');
+  const startButton = document.getElementById('startButton');
 
-    const recommendedBrowsers = `
+  const recommendedBrowsers = `
     このアプリは音声認識機能(Web Speech API)を使用しています。
     以下の最新バージョンのブラウザをご利用ください：
     <ul>
-        <li>Google Chrome</li>
-        <li>Microsoft Edge</li>
-        <li>Safari (macOS/iOS)</li>
+      <li>Google Chrome</li>
+      <li>Microsoft Edge</li>
+      <li>Safari (macOS/iOS)</li>
     </ul>
-    `;
+  `;
 
-    const userAgent = navigator.userAgent;
-    let browserInfo = '不明なブラウザ';
-    if (userAgent.includes('Chrome')) {
-        browserInfo = 'Google Chrome';
-    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
-        browserInfo = 'Safari';
-    } else if (userAgent.includes('Edge')) {
-        browserInfo = 'Microsoft Edge';
-    } else if (userAgent.includes('Firefox')) {
-        browserInfo = 'Mozilla Firefox';
-    }
+  const userAgent = navigator.userAgent;
+  let browserInfo = '不明なブラウザ';
+  if (userAgent.includes('Chrome')) {
+    browserInfo = 'Google Chrome';
+  } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+    browserInfo = 'Safari';
+  } else if (userAgent.includes('Edge')) {
+    browserInfo = 'Microsoft Edge';
+  } else if (userAgent.includes('Firefox')) {
+    browserInfo = 'Mozilla Firefox';
+  }
 
-    status.innerHTML = `
+  status.innerHTML = `
     お使いのブラウザ (${browserInfo}) は音声認識機能をサポートしていません。<br>
     ${recommendedBrowsers}
-    `;
+  `;
   
-    startButton.disabled = true;
-    startButton.textContent = 'このブラウザでは利用できません';
-} 
-else {
+  startButton.disabled = true;
+  startButton.textContent = 'このブラウザでは利用できません';
+} else {
   
-    // 音声認識処理
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
+// 音声認識処理
+const recognition = new SpeechRecognition();
+recognition.lang = 'ja-JP';
+recognition.interimResults = false;
 
-    const startButton = document.getElementById('startButton');
-    const status = document.getElementById('status');
-    const result = document.getElementById('result');
-    const startTime = document.getElementById('startTime');
-    const countdown = document.getElementById('countdown');
-    const startCountdownBtn = document.getElementById('startCountdownBtn');
-    const stopCountdownBtn = document.getElementById('stopCountdownBtn');
+const startButton = document.getElementById('startButton');
+const status = document.getElementById('status');
+const result = document.getElementById('result');
+const startTime = document.getElementById('startTime');
+const countdown = document.getElementById('countdown');
+const startCountdownBtn = document.getElementById('startCountdownBtn');
+const stopCountdownBtn = document.getElementById('stopCountdownBtn');
 
-    // カウントダウン用変数
-    let countdownInterval = null;
-    let lastMinute = -1; // 前回読み上げた分を記録
+// カウントダウン用変数
+let countdownInterval = null;
+let lastMinute = -1; // 前回読み上げた分を記録
 
-    startButton.addEventListener('click', () => {
-        recognition.start();
-        status.textContent = '聞いています...';
-        result.textContent = '';
-    });
+startButton.addEventListener('click', () => {
+  recognition.start();
+  status.textContent = '聞いています...';
+  result.textContent = '';
+});
 
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.trim();
-        console.log('認識結果:', transcript);
+recognition.onresult = (event) => {
+  const transcript = event.results[0][0].transcript.trim();
+  console.log('認識結果:', transcript);
 
-        // 拡張した正規表現パターン
-        /*
-        const patterns = [
-            /(\d{1,2})時(\d{1,2})分\s*(スタート|開始|から|に設定|セット)/,
-            /(\d{1,2}):(\d{1,2})\s*(スタート|開始|から|に設定|セット)/
-        ];
-        */
+  // 拡張した正規表現パターン
+  /*
+  const patterns = [
+    /(\d{1,2})時(\d{1,2})分\s*(スタート|開始|から|に設定|セット)/,
+    /(\d{1,2}):(\d{1,2})\s*(スタート|開始|から|に設定|セット)/
+  ];
+  */
 
-        const patterns = [
-            /(\d{1,2})時(\d{1,2})分/,
-        ];
+  const patterns = [
+    /(\d{1,2})時(\d{1,2})分/,
+  ];
 
-        let hour, minute, matched = false;
+  let hour, minute, matched = false;
 
-        for (const pattern of patterns) {
-            const match = transcript.match(pattern);
-            if (match) {
-                hour = match[1];
-                minute = match[2];
-                matched = true;
-                break; // 一致したらループ終了
-            }
-        }
+  for (const pattern of patterns) {
+    const match = transcript.match(pattern);
+    if (match) {
+      hour = match[1];
+      minute = match[2];
+      matched = true;
+      break; // 一致したらループ終了
+    }
+  }
 
-        if (matched) {
-            // 数値が1桁の場合は先頭にゼロを追加
-            const formattedHour = hour.padStart(2, '0');
-            const formattedMinute = minute.padStart(2, '0');
-            
-            const formattedTime = `${formattedHour}:${formattedMinute}`;
-            
-            startTime.value = formattedTime;
-            
-            const messageText = `スタート時刻を${parseInt(formattedHour)}時${parseInt(formattedMinute)}分に設定しました。`;
-            
-            result.textContent = messageText;
-
-            // 音声合成で読み上げる
-            speak(messageText);
-
-            // スタート時刻を設定したら、カウントダウン表示を更新
-            updateCountdown();
-            
-        } else {
-            const errorMessage = '時刻の形式が認識できませんでした。もう一度話してください。';
-            
-            result.textContent = errorMessage;
-            speak(errorMessage);
-        }
-    };
-
-    recognition.onerror = (event) => {
-        console.error('音声認識エラー:', event.error);
-
-        let errorMessage = '';
+  if (matched) {
+    // 数値が1桁の場合は先頭にゼロを追加
+    const formattedHour = hour.padStart(2, '0');
+    const formattedMinute = minute.padStart(2, '0');
     
-        switch (event.error) {
-            case 'not-allowed':
-            errorMessage = 'マイクへのアクセスが許可されていません。ブラウザの設定でマイクアクセスを許可してください。';
-            break;
-            case 'network':
-            errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
-            break;
-            case 'no-speech':
-            errorMessage = '音声が検出されませんでした。もう一度話しかけてください。';
-            break;
-            case 'aborted':
-            errorMessage = '音声認識が中断されました。もう一度試してください。';
-            break;
-            case 'audio-capture':
-            errorMessage = 'マイクが見つかりませんでした。マイクが正しく接続されているか確認してください。';
-            break;
-            default:
-            errorMessage = `予期しないエラーが発生しました: ${event.error}`;
-        }
-
-        status.textContent = errorMessage;
-        speak(errorMessage);
-        result.textContent = 'もう一度「音声認識開始」ボタンを押して試してください。';
-    };
-
-    recognition.onend = () => {
-        status.textContent += ' 音声認識終了。';
-    };
-
-    // 音声合成関数
-    function speak(text) {
-
-        const isAndroid = /Android/i.test(navigator.userAgent);
-        if (isAndroid) {
-            ///*
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP';
-            window.speechSynthesis.speak(utterance);
-            return;
-            //*/
-        }
-        else{
-            if (!window.speechSynthesis) {
-                console.warn('このブラウザでは音声合成がサポートされていません。');
-                return;
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP';
-            utterance.rate = 1.2;
-            utterance.pitch = 1.0;
-
-            // 日本語のvoiceを明示的に選択
-            //const voices = window.speechSynthesis.getVoices();
-            //const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
-
-            // voiceschangedイベントを使用して音声リストが読み込まれたことを確認
-            if (speechSynthesis.getVoices().length === 0) {
-                speechSynthesis.addEventListener('voiceschanged', () => {setVoiceAndSpeak(utterance, text);});
-            } else {
-                setVoiceAndSpeak(utterance, text);
-            }
-        
-            //console.log('利用可能な日本語音声リスト:');
-            //japaneseVoices.forEach((voice, index) => {
-            //  console.log(`${index}: Name: ${voice.name}, Lang: ${voice.lang}, LocalService: ${voice.localService}`);
-            //});  
-
-            if (japaneseVoices.length > 0) {
-                // Kyokoを含む音声を検索
-                const kyokoVoice = japaneseVoices.find(voice => voice.name.includes('Kyoko'));
-
-                if (kyokoVoice) {
-                    utterance.voice = kyokoVoice; // Kyokoの音声を設定
-                //utterance.voice = japaneseVoices[0];
-                    console.log(`選択された音声: ${kyokoVoice.name}`);
-                } else {
-                    utterance.voice = japaneseVoices[0]; // Kyokoが見つからなければ最初の日本語音声を設定
-                    console.log(`Kyokoが見つからなかったため、デフォルトの音声を使用: ${japaneseVoices[0].name}`);
-                }
-            } else {
-                console.warn('日本語の音声が見つかりませんでした。');
-                return;
-            }
-            window.speechSynthesis.speak(utterance);
-        }
-    }
-
-    // Safariなど一部ブラウザでvoicesが遅延ロードされる対策
-    window.speechSynthesis.onvoiceschanged = () => {window.speechSynthesis.getVoices();};
-
-    function setVoiceAndSpeak(utterance, text) {
-        const voices = window.speechSynthesis.getVoices();
-        const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
-
-        if (japaneseVoices.length > 0) {
-            const kyokoVoice = japaneseVoices.find(voice => voice.name.includes('Kyoko'));
-            
-            if (kyokoVoice) {
-                utterance.voice = kyokoVoice;
-                console.log(`選択された音声: ${kyokoVoice.name}`);
-            } else {
-                utterance.voice = japaneseVoices[0];
-                console.log(`Kyokoが見つからなかったため、デフォルトの音声を使用: ${japaneseVoices[0].name}`);
-            }
-            window.speechSynthesis.speak(utterance);
-        } else {
-            console.warn('日本語の音声が見つかりませんでした。');
-        }
-    }
-
-    // 残り時間を計算して表示する関数
-    function updateCountdown() {
-        const targetTimeStr = startTime.value;
-        // 表示用テキスト
-        let countdownText = '';
-
-        if (!targetTimeStr) {
-            countdown.textContent = 'スタート時刻を設定してください';
-            return;
-        }
-        
-        const now = new Date();
-        const [hours, minutes] = targetTimeStr.split(':').map(Number);
-        
-        // スタート時刻のDateオブジェクトを作成
-        const targetTime = new Date();
-        targetTime.setHours(hours, minutes, 0, 0);
-        
-        // 残り時間（ミリ秒）
-        let timeDiff = targetTime - now;
-        
-        // ミリ秒を時間、分、秒に変換
-        const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
-        const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
-        
-        if (minutesLeft === 0 && secondsLeft === 0) {
-            speak(`スタート`);
-            //countdown.textContent = 'スタート';
-            countdown.innerHTML = '<div style="text-align:center;"><span style="font-size:65px; font-weight:bold;">スタート</span></div>';
-            stopCountdown();
-            return; // ←ここで終了することで翌日の設定を防止
-        }
-
-        if (minutesLeft === 0 && secondsLeft <= 15 && secondsLeft > 0) {
-            speak(`${secondsLeft}`);
-        }
-        // 特定のタイミングで読み上げる処理
-        if (minutesLeft === 15 && secondsLeft === 0) {
-            speak('15分前');
-        }
-        if (minutesLeft === 10 && secondsLeft === 0) {
-            speak('10分前');
-        }
-        if (minutesLeft === 9 && secondsLeft === 0) {
-            speak('9分前');
-        }
-        if (minutesLeft === 8 && secondsLeft === 0) {
-            speak('8分前');
-        }
-        if (minutesLeft === 7 && secondsLeft === 0) {
-            speak('7分前');
-        }
-        if (minutesLeft === 6 && secondsLeft === 0) {
-            speak('6分前');
-        }
-        if (minutesLeft === 5 && secondsLeft === 0) {
-            speak('5分前');
-        }
-        if (minutesLeft === 4 && secondsLeft === 0) {
-            speak('4分前');
-        }
-        if (minutesLeft === 3 && secondsLeft === 0) {
-            speak('3分前');
-        }
-        if (minutesLeft === 2 && secondsLeft === 0) {
-            speak('2分前');
-        }
-        if (minutesLeft === 1 && secondsLeft === 30) {
-            speak('1分30秒前');
-        }
-        if (minutesLeft === 1 && secondsLeft === 0) {
-            speak('1分前');
-        }
-        if (minutesLeft === 0 && secondsLeft === 50) {
-            speak('50秒前');
-        }
-        if (minutesLeft === 0 && secondsLeft === 40) {
-            speak('40秒前');
-        }
-        if (minutesLeft === 0 && secondsLeft === 30) {
-            speak('30秒前');
-        }
-        if (minutesLeft === 0 && secondsLeft === 20) {
-            speak('20秒前');
-        }
-        //  if (minutesLeft === 0 && secondsLeft === 10) {
-        //    speak('10秒前');
-        //  }
-
-        /*
-        // スタート時刻を過ぎている場合は終了処理
-        if (timeDiff <= 0) {
-            stopCountdown();
-            return; // ←ここで終了することで翌日の設定を防止
-        }
-        */
-
-        if (hoursLeft > 0) {
-            countdownText += `${hoursLeft}時間`;
-        }
-        countdownText += `${minutesLeft}分${secondsLeft}秒`;
-        //countdown.textContent = `スタートまであと ${countdownText}`;
-        countdown.innerHTML = `スタートまで<br> <span style="font-size:65px; font-weight:bold;">${countdownText}</span>`;
-    }
-
-    // カウントダウン開始
-    function startCountdown() {
-        if (!startTime.value) {
-            speak('スタート時刻が設定されていません');
-            return;
-        }
+    const formattedTime = `${formattedHour}:${formattedMinute}`;
     
-        // 既存のカウントダウンがあれば停止
-        stopCountdown();
-        
-        // 初回更新
-        updateCountdown();
-        
-        // 1秒ごとに更新
-        countdownInterval = setInterval(updateCountdown, 1000);
-        
-        // ボタンの状態を更新
-        startCountdownBtn.disabled = true;
-        stopCountdownBtn.disabled = false;
-        
-        startCountdownBtn.classList.add('countdown-active');
-        
-        speak('カウントダウンを開始しました');
-    }
+    startTime.value = formattedTime;
+    
+    const messageText = `スタート時刻を${parseInt(formattedHour)}時${parseInt(formattedMinute)}分に設定しました。`;
+    
+    result.textContent = messageText;
 
-    // カウントダウン停止
-    function stopCountdown() {
-        if (countdownInterval !== null) {
-            clearInterval(countdownInterval);
-            countdownInterval = null;
-            
-            // ボタンの状態を更新
-            startCountdownBtn.disabled = false;
-            stopCountdownBtn.disabled = true;
-            
-            startCountdownBtn.classList.remove('countdown-active');
-            
-            //speak('カウントダウンを停止しました');
-        }
-    }
+    // 音声合成で読み上げる
+    speak(messageText);
 
-    // カウントダウンボタンイベント設定
-    startCountdownBtn.addEventListener('click', startCountdown);
-    stopCountdownBtn.addEventListener('click', stopCountdown);
-
-    // 手動での時刻入力にも対応
-    startTime.addEventListener('change', updateCountdown);
-
-    // 初期表示
+    // スタート時刻を設定したら、カウントダウン表示を更新
     updateCountdown();
+    
+  } else {
+    const errorMessage = '時刻の形式が認識できませんでした。もう一度話してください。';
+    
+    result.textContent = errorMessage;
+    speak(errorMessage);
+  }
+};
+
+recognition.onerror = (event) => {
+  console.error('音声認識エラー:', event.error);
+
+  let errorMessage = '';
+  
+  switch (event.error) {
+    case 'not-allowed':
+      errorMessage = 'マイクへのアクセスが許可されていません。ブラウザの設定でマイクアクセスを許可してください。';
+      break;
+    case 'network':
+      errorMessage = 'ネットワークエラーが発生しました。インターネット接続を確認してください。';
+      break;
+    case 'no-speech':
+      errorMessage = '音声が検出されませんでした。もう一度話しかけてください。';
+      break;
+    case 'aborted':
+      errorMessage = '音声認識が中断されました。もう一度試してください。';
+      break;
+    case 'audio-capture':
+      errorMessage = 'マイクが見つかりませんでした。マイクが正しく接続されているか確認してください。';
+      break;
+    default:
+      errorMessage = `予期しないエラーが発生しました: ${event.error}`;
+  }
+
+  status.textContent = errorMessage;
+  speak(errorMessage);
+  result.textContent = 'もう一度「音声認識開始」ボタンを押して試してください。';
+};
+
+recognition.onend = () => {
+   status.textContent += ' 音声認識終了。';
+};
+
+// 音声合成関数
+function speak(text) {
+	if (!window.speechSynthesis) {
+			console.warn('このブラウザでは音声合成がサポートされていません。');
+			return;
+	}
+	const isAndroid = /Android/i.test(navigator.userAgent);
+
+	if (isAndroid) {
+
+		const utterance = new SpeechSynthesisUtterance(text);
+		utterance.lang = 'ja-JP';
+		window.speechSynthesis.speak(utterance);
+
+		return;
+	}
+	else{
+
+		const utterance = new SpeechSynthesisUtterance(text);
+		utterance.lang = 'ja-JP';
+		utterance.rate = 1.2;
+		utterance.pitch = 1.0;
+
+		// 日本語のvoiceを明示的に選択
+		const voices = window.speechSynthesis.getVoices();
+		const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
+
+		/*
+		console.log('利用可能な日本語音声リスト:');
+		japaneseVoices.forEach((voice, index) => {
+			console.log(`${index}: Name: ${voice.name}, Lang: ${voice.lang}, LocalService: ${voice.localService}`);
+		});
+		*/
+
+		if (japaneseVoices.length > 0) {
+			// Kyokoを含む音声を検索
+			const kyokoVoice = japaneseVoices.find(voice => voice.name.includes('Kyoko'));
+
+			if (kyokoVoice) {
+				utterance.voice = kyokoVoice; // Kyokoの音声を設定
+				//utterance.voice = japaneseVoices[0];
+				console.log(`選択された音声: ${kyokoVoice.name}`);
+			} else {
+				utterance.voice = japaneseVoices[0]; // Kyokoが見つからなければ最初の日本語音声を設定
+				console.log(`Kyokoが見つからなかったため、デフォルトの音声を使用: ${japaneseVoices[0].name}`);
+			}
+			} else {
+				console.warn('日本語の音声が見つかりませんでした。');
+				return;
+		}
+		window.speechSynthesis.speak(utterance);
+	}
+}
+
+// Safariなど一部ブラウザでvoicesが遅延ロードされる対策
+window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.getVoices();
+};
+
+// 残り時間を計算して表示する関数
+function updateCountdown() {
+  const targetTimeStr = startTime.value;
+  // 表示用テキスト
+  let countdownText = '';
+
+  if (!targetTimeStr) {
+    countdown.textContent = 'スタート時刻を設定してください';
+    return;
+  }
+  
+  const now = new Date();
+  const [hours, minutes] = targetTimeStr.split(':').map(Number);
+  
+  // スタート時刻のDateオブジェクトを作成
+  const targetTime = new Date();
+  targetTime.setHours(hours, minutes, 0, 0);
+  
+  // 残り時間（ミリ秒）
+  let timeDiff = targetTime - now;
+  
+  // ミリ秒を時間、分、秒に変換
+  const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+  const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+  const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
+  
+  if (minutesLeft === 0 && secondsLeft === 0) {
+    speak(`スタート`);
+    //countdown.textContent = 'スタート';
+    countdown.innerHTML = '<div style="text-align:center;"><span style="font-size:65px; font-weight:bold;">スタート</span></div>';
+    stopCountdown();
+    return; // ←ここで終了することで翌日の設定を防止
+  }
+
+  if (minutesLeft === 0 && secondsLeft <= 15 && secondsLeft > 0) {
+    speak(`${secondsLeft}`);
+  }
+
+  // 特定のタイミングで読み上げる処理
+  if (minutesLeft === 15 && secondsLeft === 0) {
+    speak('15分前');
+  }
+
+  if (minutesLeft === 10 && secondsLeft === 0) {
+    speak('10分前');
+  }
+
+  if (minutesLeft === 9 && secondsLeft === 0) {
+    speak('9分前');
+  }
+
+  if (minutesLeft === 8 && secondsLeft === 0) {
+    speak('8分前');
+  }
+
+  if (minutesLeft === 7 && secondsLeft === 0) {
+    speak('7分前');
+  }
+
+  if (minutesLeft === 6 && secondsLeft === 0) {
+    speak('6分前');
+  }
+
+  if (minutesLeft === 5 && secondsLeft === 0) {
+    speak('5分前');
+  }
+
+  if (minutesLeft === 4 && secondsLeft === 0) {
+    speak('4分前');
+  }
+
+  if (minutesLeft === 3 && secondsLeft === 0) {
+    speak('3分前');
+  }
+
+  if (minutesLeft === 2 && secondsLeft === 0) {
+    speak('2分前');
+  }
+
+  if (minutesLeft === 1 && secondsLeft === 30) {
+    speak('1分30秒前');
+  }
+
+  if (minutesLeft === 1 && secondsLeft === 0) {
+    speak('1分前');
+  }
+
+  if (minutesLeft === 0 && secondsLeft === 50) {
+    speak('50秒前');
+  }
+
+  if (minutesLeft === 0 && secondsLeft === 40) {
+    speak('40秒前');
+  }
+
+  if (minutesLeft === 0 && secondsLeft === 30) {
+    speak('30秒前');
+  }
+
+  if (minutesLeft === 0 && secondsLeft === 20) {
+    speak('20秒前');
+  }
+
+  //  if (minutesLeft === 0 && secondsLeft === 10) {
+  //    speak('10秒前');
+  //  }
+
+  /*
+  // スタート時刻を過ぎている場合は終了処理
+  if (timeDiff <= 0) {
+    stopCountdown();
+    return; // ←ここで終了することで翌日の設定を防止
+  }
+  */
+
+  if (hoursLeft > 0) {
+    countdownText += `${hoursLeft}時間`;
+  }
+  countdownText += `${minutesLeft}分${secondsLeft}秒`;
+  //countdown.textContent = `スタートまであと ${countdownText}`;
+  countdown.innerHTML = `スタートまで<br> <span style="font-size:65px; font-weight:bold;">${countdownText}</span>`;
+}
+
+// カウントダウン開始
+function startCountdown() {
+  if (!startTime.value) {
+    speak('スタート時刻を設定してください');
+    return;
+  }
+  
+  // 既存のカウントダウンがあれば停止
+  stopCountdown();
+  
+  // 初回更新
+  updateCountdown();
+  
+  // 1秒ごとに更新
+  countdownInterval = setInterval(updateCountdown, 1000);
+  
+  // ボタンの状態を更新
+  startCountdownBtn.disabled = true;
+  stopCountdownBtn.disabled = false;
+  
+  startCountdownBtn.classList.add('countdown-active');
+  
+  speak('カウントダウンを開始しました');
+}
+
+// カウントダウン停止
+function stopCountdown() {
+  if (countdownInterval !== null) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+    
+    // ボタンの状態を更新
+    startCountdownBtn.disabled = false;
+    stopCountdownBtn.disabled = true;
+    
+    startCountdownBtn.classList.remove('countdown-active');
+    
+    //speak('カウントダウンを停止しました');
+  }
+}
+
+// カウントダウンボタンイベント設定
+startCountdownBtn.addEventListener('click', startCountdown);
+stopCountdownBtn.addEventListener('click', stopCountdown);
+
+// 手動での時刻入力にも対応
+startTime.addEventListener('change', updateCountdown);
+
+// 初期表示
+updateCountdown();
 
 }
 </script>
