@@ -245,6 +245,15 @@ recognition.onend = () => {
 
 // 音声合成関数
 function speak(text) {
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ja-JP';
+  window.speechSynthesis.speak(utterance);
+
+  return;
+
+  /*
+  
   if (!window.speechSynthesis) {
     console.warn('このブラウザでは音声合成がサポートされていません。');
     return;
@@ -259,12 +268,18 @@ function speak(text) {
   const voices = window.speechSynthesis.getVoices();
   const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
 
+
+  */
+
+
   /*
   console.log('利用可能な日本語音声リスト:');
   japaneseVoices.forEach((voice, index) => {
     console.log(`${index}: Name: ${voice.name}, Lang: ${voice.lang}, LocalService: ${voice.localService}`);
   });
   */
+
+  /*
 
   if (japaneseVoices.length > 0) {
   // Kyokoを含む音声を検索
@@ -284,6 +299,8 @@ function speak(text) {
   }
 
   window.speechSynthesis.speak(utterance);
+  
+  */
 }
 
 // Safariなど一部ブラウザでvoicesが遅延ロードされる対策
