@@ -247,12 +247,14 @@ else {
     // 音声合成関数
     function speak(text) {
 
-        /*
+        ///*
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ja-JP';
         window.speechSynthesis.speak(utterance);
         return;
-        */
+        //*/
+
+        /*
 
         if (!window.speechSynthesis) {
             console.warn('このブラウザでは音声合成がサポートされていません。');
@@ -297,6 +299,8 @@ else {
             return;
         }
         window.speechSynthesis.speak(utterance);
+
+        */
     }
 
     // Safariなど一部ブラウザでvoicesが遅延ロードされる対策
