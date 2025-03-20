@@ -69,8 +69,8 @@
 </head>
 <body>
   <div class="container">
-  <h1 style="color: #050dff;">Yacht Timer<span style="color: #cccccc; font-size: 16px; margin-left: 15px; font-weight: normal;">v.0.03.20.3</span> </h1>
-    <p>「10時30分」「10時30分 スタート」などと話してください</p>
+  <h1 style="color: #050dff;">Yacht Timer<span style="color: #cccccc; font-size: 16px; margin-left: 15px; font-weight: normal;">v.0.03.20.4</span> </h1>
+    <p>「10時30分 スタート」「10時30分」などと話してください</p>
 
     <button id="startButton">スタート時刻設定</button>
     <p id="status">ボタンを押して話してください</p>
@@ -257,9 +257,6 @@ function speak(text) {
 		utterance.rate = 1.3;
 		utterance.pitch = 1.0
 		window.speechSynthesis.speak(utterance);
-		if (text === "11") {
-    	text = "十一";
-  	} 
 	}
 	else{
 
@@ -351,10 +348,17 @@ function updateCountdown() {
 
 function announceTimeLeft(minutesLeft, secondsLeft) {
   // 特殊ケース：15秒以下
-  if (minutesLeft === 0 && secondsLeft <= 15) {
-    speak(`${secondsLeft}`);
-    return;
-  }
+	if (minutesLeft === 0 && secondsLeft <= 15) {
+		// 11以外の数値を先に処理
+		if (secondsLeft !== 11) {
+			speak(`${secondsLeft}`);
+		} else {
+			// 数値11の場合は漢数字で対応
+			speak("十一");
+		}
+  return;
+}
+
   
   // 時間アナウンスのマッピング
   const announcements = {
