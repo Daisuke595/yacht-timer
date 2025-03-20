@@ -70,10 +70,10 @@
 <body>
   <div class="container">
   <h1 style="color: #050dff;">Yacht Timer</h1>
-    <p>「10時30分」「10時30分 スタート」などと話してください。</p>
+    <p>「10時30分」「10時30分 スタート」などと話してください</p>
 
     <button id="startButton">スタート時刻設定</button>
-    <p id="status">ボタンを押して話してください。</p>
+    <p id="status">ボタンを押して話してください</p>
 
     <div class="time-display">
       <label for="startTime">スタート時刻:</label>
@@ -191,7 +191,7 @@ recognition.onresult = (event) => {
     
     startTime.value = formattedTime;
     
-    const messageText = `スタート時刻を${parseInt(formattedHour)}時${parseInt(formattedMinute)}分に設定しました。`;
+    const messageText = `スタート時刻を${parseInt(formattedHour)}時${parseInt(formattedMinute)}分に設定しました`;
     
     result.textContent = messageText;
 
@@ -240,7 +240,7 @@ recognition.onerror = (event) => {
 };
 
 recognition.onend = () => {
-   status.textContent += ' 音声認識終了。';
+   status.textContent = ' 聞き取りました';
 };
 
 // 音声合成関数
@@ -252,12 +252,11 @@ function speak(text) {
 	const isAndroid = /Android/i.test(navigator.userAgent);
 
 	if (isAndroid) {
-
 		const utterance = new SpeechSynthesisUtterance(text);
-		utterance.lang = 'ja-JP';
+		utterance.lang = 'ja-JP';	
+		utterance.rate = 1.2;
+		utterance.pitch = 1.0;
 		window.speechSynthesis.speak(utterance);
-
-		return;
 	}
 	else{
 
@@ -309,7 +308,8 @@ function updateCountdown() {
   let countdownText = '';
 
   if (!targetTimeStr) {
-    countdown.textContent = 'スタート時刻を設定してください';
+    //countdown.textContent = 'スタート時刻を設定してください';
+		countdown.innerHTML = `<span style="font-size:18px; font-weight:bold;">スタート時刻を設定してください</span>`;
     return;
   }
   
@@ -335,73 +335,55 @@ function updateCountdown() {
     stopCountdown();
     return; // ←ここで終了することで翌日の設定を防止
   }
-
-  if (minutesLeft === 0 && secondsLeft <= 15 && secondsLeft > 0) {
+  else if (minutesLeft === 0 && secondsLeft <= 15 && secondsLeft > 0) {
     speak(`${secondsLeft}`);
   }
-
-  // 特定のタイミングで読み上げる処理
-  if (minutesLeft === 15 && secondsLeft === 0) {
+  else if (minutesLeft === 15 && secondsLeft === 0) {
     speak('15分前');
   }
-
-  if (minutesLeft === 10 && secondsLeft === 0) {
+  else if (minutesLeft === 10 && secondsLeft === 0) {
     speak('10分前');
   }
-
-  if (minutesLeft === 9 && secondsLeft === 0) {
+  else if (minutesLeft === 9 && secondsLeft === 0) {
     speak('9分前');
   }
-
-  if (minutesLeft === 8 && secondsLeft === 0) {
+  else if (minutesLeft === 8 && secondsLeft === 0) {
     speak('8分前');
   }
-
-  if (minutesLeft === 7 && secondsLeft === 0) {
+  else if (minutesLeft === 7 && secondsLeft === 0) {
     speak('7分前');
   }
-
-  if (minutesLeft === 6 && secondsLeft === 0) {
+  else if (minutesLeft === 6 && secondsLeft === 0) {
     speak('6分前');
   }
-
-  if (minutesLeft === 5 && secondsLeft === 0) {
+  else if (minutesLeft === 5 && secondsLeft === 0) {
     speak('5分前');
   }
-
-  if (minutesLeft === 4 && secondsLeft === 0) {
+  else if (minutesLeft === 4 && secondsLeft === 0) {
     speak('4分前');
   }
-
-  if (minutesLeft === 3 && secondsLeft === 0) {
+  else if (minutesLeft === 3 && secondsLeft === 0) {
     speak('3分前');
   }
-
-  if (minutesLeft === 2 && secondsLeft === 0) {
+  else if (minutesLeft === 2 && secondsLeft === 0) {
     speak('2分前');
   }
-
-  if (minutesLeft === 1 && secondsLeft === 30) {
+  else if (minutesLeft === 1 && secondsLeft === 30) {
     speak('1分30秒前');
   }
-
-  if (minutesLeft === 1 && secondsLeft === 0) {
+  else if (minutesLeft === 1 && secondsLeft === 0) {
     speak('1分前');
   }
-
-  if (minutesLeft === 0 && secondsLeft === 50) {
+  else if (minutesLeft === 0 && secondsLeft === 50) {
     speak('50秒前');
   }
-
-  if (minutesLeft === 0 && secondsLeft === 40) {
+  else if (minutesLeft === 0 && secondsLeft === 40) {
     speak('40秒前');
   }
-
-  if (minutesLeft === 0 && secondsLeft === 30) {
+  else if (minutesLeft === 0 && secondsLeft === 30) {
     speak('30秒前');
   }
-
-  if (minutesLeft === 0 && secondsLeft === 20) {
+  else if (minutesLeft === 0 && secondsLeft === 20) {
     speak('20秒前');
   }
 
