@@ -333,7 +333,7 @@ else {
         let countdownText = '';
 
         if (!targetTimeStr) {
-            countdown.textContent = 'スタート時刻が設定されていません';
+            countdown.textContent = 'スタート時刻を設定してください';
             return;
         }
         
@@ -393,6 +393,9 @@ else {
         }
         if (minutesLeft === 2 && secondsLeft === 0) {
             speak('2分前');
+        }
+        if (minutesLeft === 1 && secondsLeft === 30) {
+            speak('1分30秒前');
         }
         if (minutesLeft === 1 && secondsLeft === 0) {
             speak('1分前');
