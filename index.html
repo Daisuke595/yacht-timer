@@ -247,60 +247,60 @@ else {
     // 音声合成関数
     function speak(text) {
 
-        ///*
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ja-JP';
-        window.speechSynthesis.speak(utterance);
-        return;
-        //*/
-
-        /*
-
-        if (!window.speechSynthesis) {
-            console.warn('このブラウザでは音声合成がサポートされていません。');
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (isAndroid) {
+            ///*
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            window.speechSynthesis.speak(utterance);
             return;
+            //*/
         }
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ja-JP';
-        utterance.rate = 1.2;
-        utterance.pitch = 1.0;
-
-        // 日本語のvoiceを明示的に選択
-        //const voices = window.speechSynthesis.getVoices();
-        //const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
-
-        // voiceschangedイベントを使用して音声リストが読み込まれたことを確認
-        if (speechSynthesis.getVoices().length === 0) {
-            speechSynthesis.addEventListener('voiceschanged', () => {setVoiceAndSpeak(utterance, text);});
-        } else {
-            setVoiceAndSpeak(utterance, text);
-        }
-    
-        //console.log('利用可能な日本語音声リスト:');
-        //japaneseVoices.forEach((voice, index) => {
-        //  console.log(`${index}: Name: ${voice.name}, Lang: ${voice.lang}, LocalService: ${voice.localService}`);
-        //});  
-
-        if (japaneseVoices.length > 0) {
-            // Kyokoを含む音声を検索
-            const kyokoVoice = japaneseVoices.find(voice => voice.name.includes('Kyoko'));
-
-            if (kyokoVoice) {
-                utterance.voice = kyokoVoice; // Kyokoの音声を設定
-            //utterance.voice = japaneseVoices[0];
-                console.log(`選択された音声: ${kyokoVoice.name}`);
-            } else {
-                utterance.voice = japaneseVoices[0]; // Kyokoが見つからなければ最初の日本語音声を設定
-                console.log(`Kyokoが見つからなかったため、デフォルトの音声を使用: ${japaneseVoices[0].name}`);
+        else{
+            if (!window.speechSynthesis) {
+                console.warn('このブラウザでは音声合成がサポートされていません。');
+                return;
             }
-        } else {
-            console.warn('日本語の音声が見つかりませんでした。');
-            return;
-        }
-        window.speechSynthesis.speak(utterance);
 
-        */
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 1.2;
+            utterance.pitch = 1.0;
+
+            // 日本語のvoiceを明示的に選択
+            //const voices = window.speechSynthesis.getVoices();
+            //const japaneseVoices = voices.filter(voice => voice.lang === 'ja-JP');
+
+            // voiceschangedイベントを使用して音声リストが読み込まれたことを確認
+            if (speechSynthesis.getVoices().length === 0) {
+                speechSynthesis.addEventListener('voiceschanged', () => {setVoiceAndSpeak(utterance, text);});
+            } else {
+                setVoiceAndSpeak(utterance, text);
+            }
+        
+            //console.log('利用可能な日本語音声リスト:');
+            //japaneseVoices.forEach((voice, index) => {
+            //  console.log(`${index}: Name: ${voice.name}, Lang: ${voice.lang}, LocalService: ${voice.localService}`);
+            //});  
+
+            if (japaneseVoices.length > 0) {
+                // Kyokoを含む音声を検索
+                const kyokoVoice = japaneseVoices.find(voice => voice.name.includes('Kyoko'));
+
+                if (kyokoVoice) {
+                    utterance.voice = kyokoVoice; // Kyokoの音声を設定
+                //utterance.voice = japaneseVoices[0];
+                    console.log(`選択された音声: ${kyokoVoice.name}`);
+                } else {
+                    utterance.voice = japaneseVoices[0]; // Kyokoが見つからなければ最初の日本語音声を設定
+                    console.log(`Kyokoが見つからなかったため、デフォルトの音声を使用: ${japaneseVoices[0].name}`);
+                }
+            } else {
+                console.warn('日本語の音声が見つかりませんでした。');
+                return;
+            }
+            window.speechSynthesis.speak(utterance);
+        }
     }
 
     // Safariなど一部ブラウザでvoicesが遅延ロードされる対策
